@@ -187,7 +187,6 @@
         
         <div class="tabs-admin">
             <button class="tab-admin active" data-tab="regions">Регионы</button>
-            <button class="tab-admin" data-tab="data">Данные</button>
             <button class="tab-admin" data-tab="users">Пользователи</button>
         </div>
         
@@ -266,41 +265,6 @@
             </table>
         </div>
         
-        <div class="tab-content-admin" id="dataTab">
-            <div class="region-form">
-                <h2>Добавить данные измерений</h2>
-                <form id="measurementForm">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Регион</label>
-                            <select id="measurementRegion" required></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Дата</label>
-                            <input type="date" id="measurementDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label>pH</label>
-                            <input type="number" step="0.1" id="measurementPh">
-                        </div>
-                        <div class="form-group">
-                            <label>Жёсткость</label>
-                            <input type="number" step="0.1" id="measurementHardness">
-                        </div>
-                        <div class="form-group">
-                            <label>Хлор</label>
-                            <input type="number" step="0.01" id="measurementChlorine">
-                        </div>
-                        <div class="form-group">
-                            <label>Нитраты</label>
-                            <input type="number" step="0.1" id="measurementNitrates">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn">Добавить данные</button>
-                </form>
-            </div>
-        </div>
-        
         <div class="tab-content-admin" id="usersTab">
             <table class="data-table">
                 <thead>
@@ -323,10 +287,8 @@
         function initAdmin() {
             loadRegions();
             loadUsers();
-            populateRegionSelect();
             
             document.getElementById('regionForm').addEventListener('submit', saveRegion);
-            document.getElementById('measurementForm').addEventListener('submit', saveMeasurement);
             
             document.querySelectorAll('.tab-admin').forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -458,18 +420,6 @@
                     <td>${new Date(u.id).toLocaleDateString('ru-RU')}</td>
                 </tr>
             `).join('') || '<tr><td colspan="4" class="empty-state">Нет пользователей</td></tr>';
-        }
-
-        function populateRegionSelect() {
-            const select = document.getElementById('measurementRegion');
-            select.innerHTML = '<option value="">Выберите регион</option>' + 
-                adminRegions.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-        }
-
-        function saveMeasurement(e) {
-            e.preventDefault();
-            alert('Данные сохранены!');
-            document.getElementById('measurementForm').reset();
         }
 
         function exportAllData() {
