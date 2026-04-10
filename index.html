@@ -11,10 +11,24 @@
     <script src="app.js"></script>
 </head>
 <body>
-    <div class="container">
+    <script>
+        const savedUser = localStorage.getItem('waterQualityUser');
+        if (!savedUser) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="container" id="mainContent">
         <header>
-            <h1>Мониторинг качества воды</h1>
-            <p class="subtitle">Донецк и Донецкая область • Данные обновлены: <span id="lastUpdate"></span></p>
+            <div class="header-content">
+                <div>
+                    <h1>Мониторинг качества воды</h1>
+                    <p class="subtitle">Донецк и Донецкая область • Данные обновлены: <span id="lastUpdate"></span></p>
+                </div>
+                <div class="user-menu">
+                    <span id="userName"></span>
+                    <button class="btn btn-small" onclick="logout()">Выйти</button>
+                </div>
+            </div>
         </header>
 
         <div class="controls">
@@ -121,25 +135,49 @@
             <div class="charts-grid">
                 <div class="card">
                     <div class="card-title">Динамика pH</div>
-                    <div class="chart-container">
+                    <div class="chart-container small">
                         <canvas id="phChart"></canvas>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-title">Динамика жёсткости</div>
-                    <div class="chart-container">
+                    <div class="chart-container small">
                         <canvas id="hardnessChart"></canvas>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-title">Динамика хлора</div>
-                    <div class="chart-container">
+                    <div class="chart-container small">
                         <canvas id="chlorineChart"></canvas>
                     </div>
                 </div>
                 <div class="card">
+                    <div class="card-title">Динамика нитратов</div>
+                    <div class="chart-container small">
+                        <canvas id="nitrateChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Динамика железа</div>
+                    <div class="chart-container small">
+                        <canvas id="ironChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Динамика мутности</div>
+                    <div class="chart-container small">
+                        <canvas id="turbidityChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Динамика проводимости</div>
+                    <div class="chart-container small">
+                        <canvas id="conductivityChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
                     <div class="card-title">Общий индекс качества</div>
-                    <div class="chart-container">
+                    <div class="chart-container small">
                         <canvas id="qualityIndexChart"></canvas>
                     </div>
                 </div>
@@ -147,15 +185,19 @@
         </div>
 
         <div class="tab-content" id="comparison">
-            <div class="comparison-grid">
+            <div class="comparison-controls">
+                <button class="btn" id="addRegionBtn" onclick="addCompareRegion()">+ Добавить регион</button>
+                <button class="btn" id="resetCompareBtn" onclick="resetComparison()" style="background: linear-gradient(135deg, #ef4444, #dc2626);">Сбросить</button>
+            </div>
+            <div class="comparison-grid" id="comparisonRegions">
                 <div class="card">
                     <div class="card-title">Регион 1</div>
-                    <select id="compareRegion1" class="select-region"></select>
+                    <select id="compareRegion1" class="select-region compare-select" data-index="1"></select>
                     <div class="region-info" id="region1Info"></div>
                 </div>
                 <div class="card">
                     <div class="card-title">Регион 2</div>
-                    <select id="compareRegion2" class="select-region"></select>
+                    <select id="compareRegion2" class="select-region compare-select" data-index="2"></select>
                     <div class="region-info" id="region2Info"></div>
                 </div>
             </div>
@@ -178,6 +220,10 @@
                                 <th>pH</th>
                                 <th>Жёсткость °Ж</th>
                                 <th>Хлор мг/л</th>
+                                <th>Нитраты мг/л</th>
+                                <th>Железо мг/л</th>
+                                <th>Мутность NTU</th>
+                                <th>Пров. μS/cm</th>
                                 <th>Качество</th>
                                 <th>Тренд</th>
                             </tr>
@@ -185,6 +231,36 @@
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="regionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Регион</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="quality-class">
+                    <h3 class="class-title">Физико-химические показатели</h3>
+                    <div class="params-grid" id="physicalParams"></div>
+                </div>
+                <div class="quality-class">
+                    <h3 class="class-title">Биологические показатели</h3>
+                    <div class="params-grid" id="biologicalParams"></div>
+                </div>
+                <div class="quality-class">
+                    <h3 class="class-title">Микробиологические показатели</h3>
+                    <div class="params-grid" id="microParams"></div>
+                </div>
+                <div class="quality-class">
+                    <h3 class="class-title">Общие показатели</h3>
+                    <div class="params-grid" id="generalParams"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="overall-quality" id="modalQuality"></div>
             </div>
         </div>
     </div>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Модуль визуализации качества воды</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f0f4f8 100%);
+        }
+        
+        .auth-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .auth-logo h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #0ea5e9, #10b981, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .auth-logo p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .auth-page .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .auth-page .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .auth-page .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background-color: #fff;
+        }
+        
+        .auth-page .form-group input:focus {
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+            outline: none;
+        }
+        
+        .auth-page .form-group input:focus {
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+            outline: none;
+        }
+        
+        .auth-page .btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+        }
+        
+        .auth-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #64748b;
+        }
+        
+        .auth-link a {
+            color: #0ea5e9;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .auth-error {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <h1>Мониторинг воды</h1>
+                <p>Донецк и Донецкая область</p>
+            </div>
+            <div class="form-group">
+                <label>Имя</label>
+                <input type="text" id="registerName" placeholder="Введите имя" autocomplete="name">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text" id="registerEmail" placeholder="Введите email" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" id="registerPassword" placeholder="Придумайте пароль" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label>Подтвердите пароль</label>
+                <input type="password" id="registerPasswordConfirm" placeholder="Повторите пароль" autocomplete="new-password">
+            </div>
+            <button class="btn" onclick="register()">Зарегистрироваться</button>
+            <p class="auth-error" id="registerError"></p>
+            <p class="auth-link">
+                Уже есть аккаунт? <a href="login.html">Войти</a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function register() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+            const errorEl = document.getElementById('registerError');
+
+            if (!name || !email || !password || !passwordConfirm) {
+                errorEl.textContent = 'Заполните все поля';
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                errorEl.textContent = 'Пароли не совпадают';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorEl.textContent = 'Пароль должен быть не менее 6 символов';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('waterQualityUsers') || '[]');
+            
+            if (users.find(u => u.email === email)) {
+                errorEl.textContent = 'Пользователь с таким email уже существует';
+                return;
+            }
+
+            const newUser = { id: Date.now(), name, email, password };
+            users.push(newUser);
+            localStorage.setItem('waterQualityUsers', JSON.stringify(users));
+            
+            localStorage.setItem('waterQualityUser', JSON.stringify(newUser));
+            errorEl.textContent = '';
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') register();
+        });
+
+        const savedUser = localStorage.getItem('waterQualityUser');
+        if (savedUser) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
