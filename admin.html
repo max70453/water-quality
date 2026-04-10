@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - Мониторинг качества воды</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-page {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .admin-header h1 {
+            color: #0ea5e9;
+            font-size: 1.8rem;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .region-form {
+            background: #fff;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .region-form h2 {
+            color: #0ea5e9;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-grid .form-group {
+            margin-bottom: 0;
+        }
+        
+        .form-grid .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #475569;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        .form-grid .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .form-grid .form-group input:focus {
+            border-color: #0ea5e9;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .data-table th {
+            background: #f8fafc;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #0ea5e9;
+            border-bottom: 2px solid #0ea5e9;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .data-table tr:hover td {
+            background: #f8fafc;
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-edit {
+            background: #0ea5e9;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .btn-delete {
+            background: #ef4444;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .btn-save {
+            background: #10b981;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+        
+        .tabs-admin {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .tab-admin {
+            padding: 12px 24px;
+            border: none;
+            background: #f8fafc;
+            color: #64748b;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .tab-admin.active {
+            background: #0ea5e9;
+            color: #fff;
+        }
+        
+        .tab-content-admin {
+            display: none;
+        }
+        
+        .tab-content-admin.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const savedUser = localStorage.getItem('waterQualityUser');
+        if (!savedUser) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    
+    <div class="admin-page">
+        <div class="admin-header">
+            <div>
+                <h1>Админ-панель</h1>
+                <p class="subtitle">Управление данными мониторинга воды</p>
+            </div>
+            <div class="admin-actions">
+                <button class="btn" onclick="exportAllData()">Экспорт данных</button>
+                <button class="btn" onclick="logout()">Выйти</button>
+            </div>
+        </div>
+        
+        <div class="tabs-admin">
+            <button class="tab-admin active" data-tab="regions">Регионы</button>
+            <button class="tab-admin" data-tab="data">Данные</button>
+            <button class="tab-admin" data-tab="users">Пользователи</button>
+        </div>
+        
+        <div class="tab-content-admin active" id="regionsTab">
+            <div class="region-form">
+                <h2>Добавить/Редактировать регион</h2>
+                <form id="regionForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Название региона</label>
+                            <input type="text" id="regionName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Широта</label>
+                            <input type="number" step="0.001" id="regionLat" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Долгота</label>
+                            <input type="number" step="0.001" id="regionLng" required>
+                        </div>
+                        <div class="form-group">
+                            <label>pH</label>
+                            <input type="number" step="0.1" id="regionPh" value="7.0">
+                        </div>
+                        <div class="form-group">
+                            <label>Жёсткость (°Ж)</label>
+                            <input type="number" step="0.1" id="regionHardness" value="7.0">
+                        </div>
+                        <div class="form-group">
+                            <label>Хлор (мг/л)</label>
+                            <input type="number" step="0.01" id="regionChlorine" value="0.5">
+                        </div>
+                        <div class="form-group">
+                            <label>Нитраты (мг/л)</label>
+                            <input type="number" step="0.1" id="regionNitrates" value="20">
+                        </div>
+                        <div class="form-group">
+                            <label>Железо (мг/л)</label>
+                            <input type="number" step="0.01" id="regionIron" value="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Мутность (NTU)</label>
+                            <input type="number" step="0.1" id="regionTurbidity" value="1.0">
+                        </div>
+                        <div class="form-group">
+                            <label>Проводимость (μS/cm)</label>
+                            <input type="number" id="regionConductivity" value="500">
+                        </div>
+                        <div class="form-group">
+                            <label>Класс качества (1-5)</label>
+                            <input type="number" min="1" max="5" id="regionQuality" value="1">
+                        </div>
+                    </div>
+                    <input type="hidden" id="regionId">
+                    <button type="submit" class="btn" id="saveRegionBtn">Добавить регион</button>
+                    <button type="button" class="btn" onclick="clearForm()" style="background: #64748b;">Очистить</button>
+                </form>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Координаты</th>
+                        <th>pH</th>
+                        <th>Жёсткость</th>
+                        <th>Хлор</th>
+                        <th>Нитраты</th>
+                        <th>Железо</th>
+                        <th>Качество</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="regionsTableBody"></tbody>
+            </table>
+        </div>
+        
+        <div class="tab-content-admin" id="dataTab">
+            <div class="region-form">
+                <h2>Добавить данные измерений</h2>
+                <form id="measurementForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Регион</label>
+                            <select id="measurementRegion" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Дата</label>
+                            <input type="date" id="measurementDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>pH</label>
+                            <input type="number" step="0.1" id="measurementPh">
+                        </div>
+                        <div class="form-group">
+                            <label>Жёсткость</label>
+                            <input type="number" step="0.1" id="measurementHardness">
+                        </div>
+                        <div class="form-group">
+                            <label>Хлор</label>
+                            <input type="number" step="0.01" id="measurementChlorine">
+                        </div>
+                        <div class="form-group">
+                            <label>Нитраты</label>
+                            <input type="number" step="0.1" id="measurementNitrates">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Добавить данные</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="tab-content-admin" id="usersTab">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя</th>
+                        <th>Email</th>
+                        <th>Дата регистрации</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        let adminRegions = [];
+        let editingId = null;
+
+        function initAdmin() {
+            loadRegions();
+            loadUsers();
+            populateRegionSelect();
+            
+            document.getElementById('regionForm').addEventListener('submit', saveRegion);
+            document.getElementById('measurementForm').addEventListener('submit', saveMeasurement);
+            
+            document.querySelectorAll('.tab-admin').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-admin').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content-admin').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
+                });
+            });
+        }
+
+        function loadRegions() {
+            const saved = localStorage.getItem('adminRegions');
+            if (saved) {
+                adminRegions = JSON.parse(saved);
+            } else {
+                adminRegions = [
+                    { id: 1, name: "Донецк", lat: 48.034, lng: 37.720, ph: 7.2, hardness: 8.5, chlorine: 0.8, nitrates: 15, iron: 0.15, turbidity: 1.2, conductivity: 650, quality: 1 },
+                    { id: 2, name: "Макеевка", lat: 48.043, lng: 37.554, ph: 7.4, hardness: 9.2, chlorine: 0.9, nitrates: 18, iron: 0.2, turbidity: 1.5, conductivity: 720, quality: 2 },
+                    { id: 3, name: "Горловка", lat: 48.292, lng: 37.960, ph: 7.1, hardness: 7.8, chlorine: 0.7, nitrates: 12, iron: 0.1, turbidity: 0.8, conductivity: 580, quality: 1 }
+                ];
+                saveRegions();
+            }
+            renderRegionsTable();
+        }
+
+        function saveRegions() {
+            localStorage.setItem('adminRegions', JSON.stringify(adminRegions));
+        }
+
+        function renderRegionsTable() {
+            const tbody = document.getElementById('regionsTableBody');
+            tbody.innerHTML = adminRegions.map(r => `
+                <tr>
+                    <td>${r.id}</td>
+                    <td><strong>${r.name}</strong></td>
+                    <td>${r.lat}, ${r.lng}</td>
+                    <td>${r.ph}</td>
+                    <td>${r.hardness}</td>
+                    <td>${r.chlorine}</td>
+                    <td>${r.nitrates}</td>
+                    <td>${r.iron}</td>
+                    <td><span class="quality-badge quality-${r.quality}">${r.quality}</span></td>
+                    <td class="action-btns">
+                        <button class="btn btn-edit" onclick="editRegion(${r.id})">Ред.</button>
+                        <button class="btn btn-delete" onclick="deleteRegion(${r.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function saveRegion(e) {
+            e.preventDefault();
+            
+            const region = {
+                id: editingId || Date.now(),
+                name: document.getElementById('regionName').value,
+                lat: parseFloat(document.getElementById('regionLat').value),
+                lng: parseFloat(document.getElementById('regionLng').value),
+                ph: parseFloat(document.getElementById('regionPh').value),
+                hardness: parseFloat(document.getElementById('regionHardness').value),
+                chlorine: parseFloat(document.getElementById('regionChlorine').value),
+                nitrates: parseFloat(document.getElementById('regionNitrates').value),
+                iron: parseFloat(document.getElementById('regionIron').value),
+                turbidity: parseFloat(document.getElementById('regionTurbidity').value),
+                conductivity: parseInt(document.getElementById('regionConductivity').value),
+                quality: parseInt(document.getElementById('regionQuality').value)
+            };
+
+            if (editingId) {
+                const idx = adminRegions.findIndex(r => r.id === editingId);
+                if (idx !== -1) adminRegions[idx] = region;
+                editingId = null;
+                document.getElementById('saveRegionBtn').textContent = 'Добавить регион';
+            } else {
+                adminRegions.push(region);
+            }
+
+            saveRegions();
+            renderRegionsTable();
+            clearForm();
+            populateRegionSelect();
+        }
+
+        function editRegion(id) {
+            const r = adminRegions.find(reg => reg.id === id);
+            if (!r) return;
+            
+            editingId = id;
+            document.getElementById('regionId').value = id;
+            document.getElementById('regionName').value = r.name;
+            document.getElementById('regionLat').value = r.lat;
+            document.getElementById('regionLng').value = r.lng;
+            document.getElementById('regionPh').value = r.ph;
+            document.getElementById('regionHardness').value = r.hardness;
+            document.getElementById('regionChlorine').value = r.chlorine;
+            document.getElementById('regionNitrates').value = r.nitrates;
+            document.getElementById('regionIron').value = r.iron;
+            document.getElementById('regionTurbidity').value = r.turbidity;
+            document.getElementById('regionConductivity').value = r.conductivity;
+            document.getElementById('regionQuality').value = r.quality;
+            
+            document.getElementById('saveRegionBtn').textContent = 'Сохранить изменения';
+            window.scrollTo(0, 0);
+        }
+
+        function deleteRegion(id) {
+            if (!confirm('Удалить этот регион?')) return;
+            adminRegions = adminRegions.filter(r => r.id !== id);
+            saveRegions();
+            renderRegionsTable();
+            populateRegionSelect();
+        }
+
+        function clearForm() {
+            editingId = null;
+            document.getElementById('regionForm').reset();
+            document.getElementById('saveRegionBtn').textContent = 'Добавить регион';
+        }
+
+        function loadUsers() {
+            const users = JSON.parse(localStorage.getItem('waterQualityUsers') || '[]');
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.name}</td>
+                    <td>${u.email}</td>
+                    <td>${new Date(u.id).toLocaleDateString('ru-RU')}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="empty-state">Нет пользователей</td></tr>';
+        }
+
+        function populateRegionSelect() {
+            const select = document.getElementById('measurementRegion');
+            select.innerHTML = '<option value="">Выберите регион</option>' + 
+                adminRegions.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        }
+
+        function saveMeasurement(e) {
+            e.preventDefault();
+            alert('Данные сохранены!');
+            document.getElementById('measurementForm').reset();
+        }
+
+        function exportAllData() {
+            const data = {
+                regions: adminRegions,
+                users: JSON.parse(localStorage.getItem('waterQualityUsers') || '[]'),
+                measurements: JSON.parse(localStorage.getItem('waterMeasurements') || '[]')
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'water_quality_admin_data.json';
+            a.click();
+        }
+
+        function logout() {
+            localStorage.removeItem('waterQualityUser');
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', initAdmin);
+    </script>
+</body>
+</html>

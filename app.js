@@ -435,10 +435,6 @@ function addCompareRegion() {
     select.innerHTML = '<option value="">Выберите регион</option>' + 
         waterData.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
     select.addEventListener('change', updateComparison);
-    
-    if (newIndex > 2) {
-        document.getElementById('addRegionBtn').style.display = 'none';
-    }
 }
 
 function removeCompareRegion(index) {
@@ -463,10 +459,6 @@ function removeCompareRegion(index) {
     compareRegions = compareRegions.map((_, i) => i + 1);
     
     rebuildCompareCards();
-    
-    if (compareRegions.length < maxRegions) {
-        document.getElementById('addRegionBtn').style.display = 'inline-flex';
-    }
     
     updateComparison();
 }
@@ -517,8 +509,6 @@ function resetComparison() {
             waterData.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
         select.addEventListener('change', updateComparison);
     }
-    
-    document.getElementById('addRegionBtn').style.display = 'inline-flex';
     
     if (charts.compare) {
         charts.compare.destroy();
