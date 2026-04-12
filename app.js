@@ -269,7 +269,15 @@ function initCharts() {
             labels: ['pH', 'Жёсткость', 'Хлор', 'Нитраты', 'Железо', 'Мутность', 'Проводимость'],
             datasets: [{
                 label: 'Среднее значение',
-                data: [avgPh, avgHardness, avgChlorine, avgNitrates, avgIron, avgTurbidity, avgConductivity],
+                data: [
+                    (avgPh / 14) * 100,
+                    (avgHardness / 20) * 100,
+                    (avgChlorine / 5) * 100,
+                    (avgNitrates / 50) * 100,
+                    (avgIron / 3) * 100,
+                    (avgTurbidity / 100) * 100,
+                    (avgConductivity / 1000) * 100
+                ],
                 backgroundColor: ['#0ea5e9', '#84cc16', '#f97316', '#10b981', '#ca8a04', '#6366f1', '#ec4899'],
                 borderRadius: 8
             }]
@@ -278,7 +286,7 @@ function initCharts() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)' }, ticks: { color: '#64748b' } },
+                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.1)' }, ticks: { color: '#64748b', callback: v => v + '%' } },
                 x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } }
             },
             plugins: { legend: { display: false } }
